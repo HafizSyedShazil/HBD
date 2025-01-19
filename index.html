@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Mrs Shazuu</title>
+    <style>
+        body {
+            margin: 0;
+            background: #020202;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        h1 {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: "Source Sans Pro", Arial, sans-serif;
+            font-size: 2em;
+            font-weight: 900;
+            -webkit-user-select: none;
+            user-select: none;
+            text-align: center;
+        }
+
+        h2 {
+            position: absolute;
+            margin-top: 400px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0080;
+            font-family: "Source Sans Pro", Arial, sans-serif;
+            font-size: 1em;
+            font-weight: 700;
+            -webkit-user-select: none;
+            user-select: none;
+            text-align: center;
+        }
+
+        button {
+    width: 200px;
+    height: 40px;
+    margin-top: 230px;
+    position: absolute;
+    left: 30%;
+    border-radius: 50px;
+    color: rgb(255, 255, 255);
+    font-size: small;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: rgb(255, 30, 217);
+    transition: 0.3s;
+}
+button:hover {
+    background-color: rgb(255, 255, 255);
+    color: black;
+}
+    </style>
+</head>
+
+<body>
+    <h1>Happy Birthday Jaweria Meri Guriya ❤</h1>
+
+    <a href="pics.html"><button>Mrs Shazil ❤️</button></a>
+    <h2>My dearest love,
+
+        Today is a day that belongs to you,
+        Your smile is the peace of my life,
+        Your happiness is the center of all my prayers.
+        I pray that your life is always filled with love, joy, and success.
+        Every beat of my heart is for you, and every prayer is for your happiness.
+        
+        Happy Birthday, my wife! ❤️🎂✨
+        Your love is the most precious gift of my life. 💕</h2>
+    <canvas id="birthday"></canvas>
+
+    <script>
+        // Helper functions
+        const PI2 = Math.PI * 2;
+        const random = (min, max) => Math.random() * (max - min) + min;
+        const timestamp = () => new Date().getTime();
+
+        // Fireworks Container
+        class Birthday {
+            constructor() {
+                this.resize();
+                this.fireworks = [];
+                this.counter = 0;
+            }
+
+            resize() {
+                this.width = canvas.width = window.innerWidth;
+                this.height = canvas.height = window.innerHeight;
+
+                // Set spawn ranges
+                this.spawnA = this.width / 4;
+                this.spawnB = this.width * 3 / 4;
+                this.spawnC = this.height * 0.1;
+                this.spawnD = this.height * 0.5;
+            }
+
+            onClick(evt) {
+                const x = evt.clientX || (evt.touches && evt.touches[0].pageX);
+                const y = evt.clientY || (evt.touches && evt.touches[0].pageY);
+
+                // Create a random number of fireworks
+                const count = random(3, 5);
+                for (let i = 0; i < count; i++) {
+                    this.fireworks.push(new Firework(
+                        random(this.spawnA, this.spawnB),
+                        this.height,
+                        x,
+                        y,
+                        random(0, 360),
+                        random(30, 110)
+                    ));
+                }
+
+                // Reset the counter
+                this.counter = -1;
+            }
+
+            update(delta) {
+                // Darken the canvas over time
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = `rgba(20, 20, 20, ${7 * delta})`;
+                ctx.fillRect(0, 0, this.width, this.height);
+
+                // Render fireworks
+                ctx.globalCompositeOperation = 'lighter';
+                this.fireworks.forEach(firework => firework.update(delta));
+
+                // Spawn new fireworks periodically
+                this.counter += delta * 3; // Every second
+                if (this.counter >= 1) {
+                    this.fireworks.push(new Firework(
+                        random(this.spawnA, this.spawnB),
+                        this.height,
+                        random(0, this.width),
+                        random(this.spawnC, this.spawnD),
+                        random(0, 360),
+                        random(30, 110)
+                    ));
+                    this.counter = 0;
+                }
+
+                // Remove dead fireworks
+                this.fireworks = this.fireworks.filter(firework => !firework.dead);
+            }
+        }
+
+        // Firework Class
+        class Firework {
+            constructor(x, y, targetX, targetY, shade, offsprings) {
+                this.dead = false;
+                this.offsprings = offsprings;
+
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+
+                this.shade = shade;
+                this.history = [];
+            }
+
+            update(delta) {
+                if (this.dead) return;
+
+                const xDiff = this.targetX - this.x;
+                const yDiff = this.targetY - this.y;
+
+                // Move firework
+                if (Math.abs(xDiff) > 3 || Math.abs(yDiff) > 3) {
+                    this.x += xDiff * 2 * delta;
+                    this.y += yDiff * 2 * delta;
+
+                    this.history.push({ x: this.x, y: this.y });
+
+                    if (this.history.length > 20) this.history.shift();
+                } else {
+                    if (this.offsprings && !this.madeChilds) {
+                        const babies = this.offsprings / 2;
+                        for (let i = 0; i < babies; i++) {
+                            const angle = PI2 * i / babies;
+                            const targetX = this.x + this.offsprings * Math.cos(angle);
+                            const targetY = this.y + this.offsprings * Math.sin(angle);
+
+                            birthday.fireworks.push(new Firework(
+                                this.x,
+                                this.y,
+                                targetX,
+                                targetY,
+                                this.shade,
+                                0
+                            ));
+                        }
+                        this.madeChilds = true;
+                    }
+
+                    this.history.shift();
+                }
+
+                if (this.history.length === 0) this.dead = true;
+
+                // Draw firework
+                this.history.forEach((point, i) => {
+                    ctx.beginPath();
+                    ctx.fillStyle = `hsl(${this.shade}, 100%, ${i}%)`;
+                    ctx.arc(point.x, point.y, 1, 0, PI2);
+                    ctx.fill();
+                });
+
+                if (!this.offsprings) {
+                    ctx.beginPath();
+                    ctx.fillStyle = `hsl(${this.shade}, 100%, 50%)`;
+                    ctx.arc(this.x, this.y, 1, 0, PI2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Initialize canvas and animation
+        const canvas = document.getElementById('birthday');
+        const ctx = canvas.getContext('2d');
+
+        const birthday = new Birthday();
+        window.onresize = () => birthday.resize();
+        document.addEventListener('click', evt => birthday.onClick(evt));
+        document.addEventListener('touchstart', evt => birthday.onClick(evt), { passive: true });
+
+        let then = timestamp();
+        (function loop() {
+            requestAnimationFrame(loop);
+
+            const now = timestamp();
+            const delta = (now - then) / 1000;
+
+            then = now;
+            birthday.update(delta);
+        })();
+    </script>
+</body>
+
+</html>
